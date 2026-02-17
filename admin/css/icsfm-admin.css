@@ -1,0 +1,409 @@
+/* ICS Feed Monitor Admin Styles */
+
+.icsfm-wrap {
+    max-width: 1200px;
+}
+
+/* ─── Cards ─────────────────────────────────────────── */
+
+.icsfm-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.icsfm-card {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 16px 20px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.icsfm-card-wide {
+    margin: 20px 0;
+}
+
+.icsfm-card-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e2e4e7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.icsfm-link-small {
+    font-size: 12px;
+    font-weight: normal;
+    text-decoration: none;
+}
+
+/* ─── Status Table (Dashboard) ──────────────────────── */
+
+.icsfm-status-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.icsfm-status-table td {
+    padding: 6px 4px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0f0f1;
+    font-size: 13px;
+}
+
+.icsfm-status-table tr:last-child td {
+    border-bottom: none;
+}
+
+.icsfm-status-dot {
+    width: 24px;
+    text-align: center;
+}
+
+.icsfm-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    vertical-align: middle;
+}
+
+.icsfm-feed-label {
+    font-weight: 500;
+}
+
+.icsfm-feed-label a {
+    text-decoration: none;
+    color: #1d2327;
+}
+
+.icsfm-feed-label a:hover {
+    color: #2271b1;
+}
+
+.icsfm-feed-poll-time {
+    color: #646970;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.icsfm-feed-fetch-status {
+    text-align: right;
+}
+
+/* ─── Badges ────────────────────────────────────────── */
+
+.icsfm-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    line-height: 1.6;
+}
+
+.icsfm-badge-ok {
+    background: #edfaef;
+    color: #1e7e34;
+}
+
+.icsfm-badge-error {
+    background: #fce4e4;
+    color: #cc1818;
+}
+
+.icsfm-badge-warning,
+.icsfm-badge-warning {
+    background: #fff8e5;
+    color: #996800;
+}
+
+.icsfm-badge-info {
+    background: #e8f0fe;
+    color: #1a56db;
+}
+
+.icsfm-badge-debug {
+    background: #f0f0f1;
+    color: #646970;
+}
+
+.icsfm-badge-inactive {
+    background: #f0f0f1;
+    color: #646970;
+}
+
+/* ─── Platform Badges ───────────────────────────────── */
+
+.icsfm-platform-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+.icsfm-platform-airbnb {
+    background: #ff585d20;
+    color: #ff385c;
+}
+
+.icsfm-platform-vrbo {
+    background: #0e377620;
+    color: #0e3776;
+}
+
+.icsfm-platform-booking {
+    background: #00338d20;
+    color: #00338d;
+}
+
+.icsfm-platform-other {
+    background: #f0f0f1;
+    color: #646970;
+}
+
+/* ─── Proxy URL ─────────────────────────────────────── */
+
+.icsfm-proxy-url-display {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin: 8px 0;
+}
+
+.icsfm-proxy-url-display input {
+    font-family: monospace;
+    font-size: 12px;
+    background: #f6f7f7;
+}
+
+.icsfm-proxy-url-cell {
+    max-width: 300px;
+}
+
+.icsfm-proxy-url {
+    font-size: 11px;
+    word-break: break-all;
+}
+
+.icsfm-copy-btn {
+    white-space: nowrap;
+}
+
+.icsfm-copy-btn.copied {
+    color: #1e7e34;
+}
+
+/* ─── Test Results ──────────────────────────────────── */
+
+.icsfm-test-result {
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 13px;
+}
+
+.icsfm-test-result.success {
+    color: #1e7e34;
+}
+
+.icsfm-test-result.error {
+    color: #cc1818;
+}
+
+.icsfm-test-result.loading {
+    color: #646970;
+}
+
+/* ─── Log Table ─────────────────────────────────────── */
+
+.icsfm-log-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.icsfm-log-table td {
+    padding: 4px 8px;
+    vertical-align: top;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.icsfm-log-time {
+    white-space: nowrap;
+    color: #646970;
+    font-family: monospace;
+    font-size: 11px;
+}
+
+.icsfm-log-source {
+    color: #646970;
+}
+
+.icsfm-log-message {
+    max-width: 400px;
+}
+
+/* Full log page */
+.icsfm-log-table-full .icsfm-col-time {
+    width: 150px;
+}
+
+.icsfm-log-table-full .icsfm-col-level {
+    width: 80px;
+}
+
+.icsfm-log-table-full .icsfm-col-source {
+    width: 80px;
+}
+
+.icsfm-log-table-full .icsfm-col-context {
+    width: 80px;
+}
+
+.icsfm-context-pre {
+    background: #f6f7f7;
+    padding: 8px;
+    font-size: 11px;
+    max-height: 200px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin: 4px 0 0;
+    border: 1px solid #ddd;
+}
+
+/* Log row coloring */
+.icsfm-log-error td:first-child {
+    border-left: 3px solid #dc3232;
+}
+
+.icsfm-log-warning td:first-child {
+    border-left: 3px solid #ffb900;
+}
+
+/* ─── Log Filters ───────────────────────────────────── */
+
+.icsfm-log-filters {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin: 16px 0;
+    flex-wrap: wrap;
+}
+
+.icsfm-log-count {
+    color: #646970;
+    font-size: 13px;
+}
+
+/* ─── Footer / Cron Info ────────────────────────────── */
+
+.icsfm-dashboard-footer {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid #e2e4e7;
+}
+
+.icsfm-cron-info {
+    color: #646970;
+    font-size: 13px;
+}
+
+/* ─── Utility ───────────────────────────────────────── */
+
+.icsfm-muted {
+    color: #a7aaad;
+}
+
+.icsfm-text-error {
+    color: #dc3232;
+}
+
+.icsfm-text-warning {
+    color: #996800;
+}
+
+.icsfm-delete-link {
+    color: #b32d2e;
+}
+
+.icsfm-delete-link:hover {
+    color: #a02020;
+}
+
+.icsfm-ua-cell {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 11px;
+    color: #646970;
+}
+
+/* ─── Feed Proxy Blocks (Settings) ──────────────────── */
+
+.icsfm-url-readonly {
+    font-family: monospace;
+    font-size: 12px;
+    background: #f6f7f7;
+    cursor: text;
+}
+
+.icsfm-feed-proxy-block {
+    padding: 10px 0;
+    border-bottom: 1px solid #e2e4e7;
+}
+
+.icsfm-feed-proxy-block:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.icsfm-feed-proxy-block:first-child {
+    padding-top: 0;
+}
+
+.icsfm-feed-proxy-header {
+    margin-bottom: 6px;
+}
+
+.icsfm-feed-proxy-detail {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.icsfm-feed-proxy-detail td {
+    padding: 3px 0;
+    vertical-align: middle;
+}
+
+.icsfm-proxy-label {
+    width: 200px;
+    font-size: 13px;
+    color: #646970;
+    padding-right: 10px !important;
+}
+
+.icsfm-proxy-hint {
+    font-size: 11px;
+    color: #a7aaad;
+    font-weight: normal;
+}
+
+.icsfm-feed-proxy-detail .icsfm-proxy-url-display {
+    margin: 0;
+}
+
+.icsfm-card h3.icsfm-card-title {
+    font-size: 14px;
+    margin: 0 0 10px 0;
+}
