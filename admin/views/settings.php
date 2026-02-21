@@ -57,6 +57,26 @@
             </tr>
         </table>
 
+        <h2>Email Alerts</h2>
+        <table class="form-table">
+            <tr>
+                <th scope="row"><label for="alert_email">Alert Email Address</label></th>
+                <td>
+                    <input type="email" name="alert_email" id="alert_email" class="regular-text"
+                           value="<?php echo esc_attr($settings['alert_email'] ?? ''); ?>"
+                           placeholder="you@example.com">
+                    <p class="description">Email address to receive stale-feed and recovery alerts. Leave empty to disable email alerts.</p>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">Test Email</th>
+                <td>
+                    <button type="button" class="button" id="icsfm-test-email">Send Test Email</button>
+                    <span id="icsfm-email-test-result" class="icsfm-test-result"></span>
+                </td>
+            </tr>
+        </table>
+
         <h2>Healthcheck / Heartbeat</h2>
         <table class="form-table">
             <tr>

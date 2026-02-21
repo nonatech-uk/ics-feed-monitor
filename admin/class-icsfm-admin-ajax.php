@@ -14,6 +14,7 @@ class ICSFM_Admin_Ajax {
     public function init(): void {
         add_action('wp_ajax_icsfm_test_feed', [$this, 'test_feed']);
         add_action('wp_ajax_icsfm_test_webhook', [$this, 'test_webhook']);
+        add_action('wp_ajax_icsfm_test_email', [$this, 'test_email']);
         add_action('wp_ajax_icsfm_test_healthcheck', [$this, 'test_healthcheck']);
         add_action('wp_ajax_icsfm_refresh_dashboard', [$this, 'refresh_dashboard']);
     }
@@ -104,6 +105,28 @@ class ICSFM_Admin_Ajax {
             wp_send_json_success(['message' => 'Test webhook sent successfully.']);
         } else {
             wp_send_json_error(['message' => 'Webhook delivery failed. Check the logs for details.']);
+        }
+    }
+
+    public function test_email(): void {
+        check_ajax_referer('icsfm_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Unauthorized');
+        }
+
+        $email = new ICSFM_Email();
+        $success = $email->send_test();
+
+        if ($success) {
+            wp_send_json_success(['message' => 'Test email sent successfully.']);
+        } else {
+            $settings = get_option('icsfm_settings', []);
+            if (empty($settings['alert_email'])) {
+                wp_send_json_error(['message' => 'No email address configured. Save settings first.']);
+            } else {
+                wp_send_json_error(['message' => 'Email delivery failed. Check your WordPress mail configuration.']);
+            }
         }
     }
 

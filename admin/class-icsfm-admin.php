@@ -123,15 +123,5 @@ class ICSFM_Admin {
         if (!$screen || strpos($screen->id, 'icsfm') === false) {
             return;
         }
-
-        $settings = get_option('icsfm_settings', []);
-
-        if (empty($settings['webhook_url'])) {
-            echo '<div class="notice notice-warning"><p>';
-            echo '<strong>ICS Feed Monitor:</strong> ';
-            echo 'No webhook URL configured. Alerts will not be sent. ';
-            echo '<a href="' . esc_url(admin_url('admin.php?page=icsfm-settings')) . '">Configure now</a>';
-            echo '</p></div>';
-        }
     }
 }

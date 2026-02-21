@@ -98,6 +98,32 @@
         });
     });
 
+    // ─── Test Email ─────────────────────────────────────
+    $(document).on('click', '#icsfm-test-email', function(e) {
+        e.preventDefault();
+        var btn = $(this);
+        var resultEl = $('#icsfm-email-test-result');
+
+        btn.prop('disabled', true);
+        resultEl.text('Sending...').attr('class', 'icsfm-test-result loading');
+
+        $.post(icsfm.ajax_url, {
+            action: 'icsfm_test_email',
+            nonce: icsfm.nonce
+        }, function(response) {
+            btn.prop('disabled', false);
+            if (response.success) {
+                resultEl.text(response.data.message).attr('class', 'icsfm-test-result success');
+            } else {
+                var msg = response.data.message || response.data || 'Email test failed.';
+                resultEl.text(msg).attr('class', 'icsfm-test-result error');
+            }
+        }).fail(function() {
+            btn.prop('disabled', false);
+            resultEl.text('Request failed.').attr('class', 'icsfm-test-result error');
+        });
+    });
+
     // ─── Test Healthcheck ────────────────────────────────
     $(document).on('click', '#icsfm-test-healthcheck', function(e) {
         e.preventDefault();

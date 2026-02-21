@@ -89,6 +89,7 @@
                     <td>
                         <?php if ($feed->last_polled_at): ?>
                             <?php echo esc_html(ICSFM_Admin_Dashboard::time_ago($feed->last_polled_at)); ?>
+                            <br><span class="icsfm-muted"><?php echo esc_html(gmdate('j M Y, g:ia', strtotime($feed->last_polled_at))); ?> UTC</span>
                         <?php else: ?>
                             <span class="icsfm-muted">Never</span>
                         <?php endif; ?>

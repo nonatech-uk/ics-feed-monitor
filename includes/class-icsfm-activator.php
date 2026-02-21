@@ -102,7 +102,7 @@ class ICSFM_Activator {
 
     private static function schedule_cron(): void {
         if (!wp_next_scheduled('icsfm_check_stale_feeds')) {
-            wp_schedule_event(time(), 'hourly', 'icsfm_check_stale_feeds');
+            wp_schedule_event(time(), 'every_five_minutes', 'icsfm_check_stale_feeds');
         }
     }
 }

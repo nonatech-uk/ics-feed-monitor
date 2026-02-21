@@ -3,7 +3,7 @@
  * Plugin Name: ICS Feed Monitor
  * Plugin URI:  https://github.com/nonatech-uk/ICS-Sync-Checker
  * Description: Proxies ICS calendar feeds and monitors polling activity. Alerts via webhook when platforms stop syncing.
- * Version:     1.1.0
+ * Version:     1.2.0
  * Author:      Nonatech UK
  * Author URI:  https://nonatech.co.uk
  * Text Domain: ics-feed-monitor
@@ -13,7 +13,7 @@
 
 defined('ABSPATH') || exit;
 
-define('ICSFM_VERSION', '1.1.0');
+define('ICSFM_VERSION', '1.2.0');
 define('ICSFM_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('ICSFM_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('ICSFM_PLUGIN_FILE', __FILE__);
@@ -29,7 +29,17 @@ require_once ICSFM_PLUGIN_DIR . 'includes/class-icsfm-poll-logger.php';
 require_once ICSFM_PLUGIN_DIR . 'includes/class-icsfm-proxy-handler.php';
 require_once ICSFM_PLUGIN_DIR . 'includes/class-icsfm-cron-handler.php';
 require_once ICSFM_PLUGIN_DIR . 'includes/class-icsfm-webhook.php';
+require_once ICSFM_PLUGIN_DIR . 'includes/class-icsfm-email.php';
 require_once ICSFM_PLUGIN_DIR . 'includes/class-icsfm-github-updater.php';
+
+// Custom cron schedule
+add_filter('cron_schedules', function (array $schedules): array {
+    $schedules['every_five_minutes'] = [
+        'interval' => 300,
+        'display'  => 'Every 5 Minutes',
+    ];
+    return $schedules;
+});
 
 // Activation / Deactivation
 register_activation_hook(__FILE__, ['ICSFM_Activator', 'activate']);
@@ -48,7 +58,7 @@ add_action('plugins_loaded', function () {
     add_filter('rest_pre_serve_request', [$proxy, 'serve_raw_ics'], 10, 4);
 
     // Cron
-    $cron = new ICSFM_Cron_Handler($repo, $poll_logger, new ICSFM_Webhook());
+    $cron = new ICSFM_Cron_Handler($repo, $poll_logger, new ICSFM_Webhook(), new ICSFM_Email());
     add_action('icsfm_check_stale_feeds', [$cron, 'check_stale_feeds']);
 
     // GitHub updater

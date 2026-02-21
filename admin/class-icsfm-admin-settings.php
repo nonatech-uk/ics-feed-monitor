@@ -40,6 +40,7 @@ class ICSFM_Admin_Settings {
             'webhook_url'          => isset($_POST['webhook_url']) ? esc_url_raw(wp_unslash($_POST['webhook_url'])) : '',
             'webhook_method'       => isset($_POST['webhook_method']) && $_POST['webhook_method'] === 'GET' ? 'GET' : 'POST',
             'webhook_secret'       => isset($_POST['webhook_secret']) ? sanitize_text_field(wp_unslash($_POST['webhook_secret'])) : '',
+            'alert_email'          => isset($_POST['alert_email']) ? sanitize_email(wp_unslash($_POST['alert_email'])) : '',
             'healthcheck_url'      => isset($_POST['healthcheck_url']) ? esc_url_raw(wp_unslash($_POST['healthcheck_url'])) : '',
             'default_alert_window' => isset($_POST['default_alert_window']) ? max(1, (int) $_POST['default_alert_window']) : 6,
             'alert_cooldown_hours' => isset($_POST['alert_cooldown_hours']) ? max(1, (int) $_POST['alert_cooldown_hours']) : 6,

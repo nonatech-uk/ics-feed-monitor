@@ -6,11 +6,13 @@ class ICSFM_Cron_Handler {
     private ICSFM_Feed_Repository $repo;
     private ICSFM_Poll_Logger $poll_logger;
     private ICSFM_Webhook $webhook;
+    private ICSFM_Email $email;
 
-    public function __construct(ICSFM_Feed_Repository $repo, ICSFM_Poll_Logger $poll_logger, ICSFM_Webhook $webhook) {
+    public function __construct(ICSFM_Feed_Repository $repo, ICSFM_Poll_Logger $poll_logger, ICSFM_Webhook $webhook, ICSFM_Email $email) {
         $this->repo = $repo;
         $this->poll_logger = $poll_logger;
         $this->webhook = $webhook;
+        $this->email = $email;
     }
 
     public function check_stale_feeds(): void {
@@ -46,9 +48,10 @@ class ICSFM_Cron_Handler {
         $stale_labels = [];
 
         foreach ($actionable as $feed) {
-            $success = $this->webhook->fire_stale_alert($feed);
+            $webhook_ok = $this->webhook->fire_stale_alert($feed);
+            $email_ok = $this->email->send_stale_alert($feed);
 
-            if ($success) {
+            if ($webhook_ok || $email_ok) {
                 $this->repo->update_feed((int) $feed->id, [
                     'last_alert_sent_at' => current_time('mysql', true),
                 ]);
@@ -63,12 +66,25 @@ class ICSFM_Cron_Handler {
             );
         }
 
+        // Check for feeds that have recovered since last alert
+        $cleared_feeds = $this->repo->get_cleared_feeds();
+        $cleared_count = 0;
+
+        foreach ($cleared_feeds as $feed) {
+            $this->email->send_clear_alert($feed);
+            $this->repo->update_feed((int) $feed->id, [
+                'last_alert_sent_at' => null,
+            ]);
+            $cleared_count++;
+        }
+
         $total_active = $this->repo->count_active_feeds();
 
         ICSFM_Logger::info('cron', 'Staleness check completed', [
             'total_active_feeds' => $total_active,
             'stale_feeds_found'  => count($actionable),
             'alerts_sent'        => $alerted,
+            'cleared_feeds'      => $cleared_count,
             'stale_feed_labels'  => $stale_labels,
         ]);
 
@@ -84,8 +100,9 @@ class ICSFM_Cron_Handler {
             ]);
         }
 
-        // Ping healthcheck: job complete (or /fail if there were stale feeds)
-        if (count($actionable) > 0) {
+        // Ping healthcheck: /fail if ANY feed is currently stale (regardless of alert cooldown)
+        $all_stale = $this->repo->get_all_stale_feeds();
+        if (count($all_stale) > 0) {
             $this->webhook->ping_healthcheck('fail');
         } else {
             $this->webhook->ping_healthcheck();

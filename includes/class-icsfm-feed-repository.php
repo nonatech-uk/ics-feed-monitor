@@ -325,6 +325,41 @@ class ICSFM_Feed_Repository {
         ) ?: [];
     }
 
+    public function get_cleared_feeds(): array {
+        global $wpdb;
+        $at = $this->apartments_table();
+        $ft = $this->feeds_table();
+
+        return $wpdb->get_results(
+            "SELECT f.*, a.name AS apartment_name
+             FROM {$ft} f
+             LEFT JOIN {$at} a ON a.id = f.apartment_id
+             WHERE f.is_active = 1
+               AND f.last_alert_sent_at IS NOT NULL
+               AND f.last_polled_at IS NOT NULL
+               AND f.last_polled_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL f.alert_window_hours HOUR)
+             ORDER BY f.last_polled_at DESC"
+        ) ?: [];
+    }
+
+    public function get_all_stale_feeds(): array {
+        global $wpdb;
+        $at = $this->apartments_table();
+        $ft = $this->feeds_table();
+
+        return $wpdb->get_results(
+            "SELECT f.*, a.name AS apartment_name
+             FROM {$ft} f
+             LEFT JOIN {$at} a ON a.id = f.apartment_id
+             WHERE f.is_active = 1
+               AND (
+                 f.last_polled_at IS NULL
+                 OR f.last_polled_at < DATE_SUB(UTC_TIMESTAMP(), INTERVAL f.alert_window_hours HOUR)
+               )
+             ORDER BY f.last_polled_at ASC"
+        ) ?: [];
+    }
+
     public function get_feeds_grouped_by_apartment(): array {
         $apartments = $this->get_all_apartments();
         $grouped = [];
