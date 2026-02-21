@@ -3,15 +3,22 @@ defined('ABSPATH') || exit;
 
 class ICSFM_Webhook {
 
-    public function fire_stale_alert(object $feed): bool {
+    public function fire_stale_alert(object $feed, int $alert_window_hours): bool {
+        $feed_label = ICSFM_Feed_Repository::derive_feed_label($feed);
+        $source_platform = ICSFM_Feed_Repository::get_source_platform($feed);
+        $dest_platform = ICSFM_Feed_Repository::get_dest_platform($feed);
+
         return $this->fire('feed_stale', [
             'feed' => [
                 'id'                 => (int) $feed->id,
-                'label'              => $feed->label,
-                'platform'           => $feed->platform,
+                'label'              => $feed_label,
+                'source_platform'    => $source_platform,
+                'dest_platform'      => $dest_platform,
                 'apartment'          => $feed->apartment_name ?? '',
+                'pair_id'            => (int) $feed->pair_id,
+                'direction'          => $feed->direction,
                 'proxy_url'          => rest_url("icsfm/v1/feed/{$feed->proxy_token}"),
-                'alert_window_hours' => (int) $feed->alert_window_hours,
+                'alert_window_hours' => $alert_window_hours,
             ],
             'staleness' => [
                 'last_polled_at'    => $feed->last_polled_at ?: null,
@@ -34,9 +41,9 @@ class ICSFM_Webhook {
      * each cron run so the healthcheck service knows the cron is alive.
      *
      * Supports /start and /fail suffixes (healthchecks.io convention):
-     *   - ping_healthcheck('start') → appends /start to the URL
-     *   - ping_healthcheck('fail')  → appends /fail to the URL
-     *   - ping_healthcheck()        → pings the bare URL (success/complete)
+     *   - ping_healthcheck('start') -> appends /start to the URL
+     *   - ping_healthcheck('fail')  -> appends /fail to the URL
+     *   - ping_healthcheck()        -> pings the bare URL (success/complete)
      */
     public function ping_healthcheck(string $signal = ''): bool {
         $settings = get_option('icsfm_settings', []);
@@ -79,12 +86,19 @@ class ICSFM_Webhook {
     }
 
     public function fire_upstream_error(object $feed, string $error): bool {
+        $feed_label = ICSFM_Feed_Repository::derive_feed_label($feed);
+        $source_platform = ICSFM_Feed_Repository::get_source_platform($feed);
+        $dest_platform = ICSFM_Feed_Repository::get_dest_platform($feed);
+
         return $this->fire('upstream_error', [
             'feed' => [
-                'id'        => (int) $feed->id,
-                'label'     => $feed->label,
-                'platform'  => $feed->platform,
-                'apartment' => $feed->apartment_name ?? '',
+                'id'              => (int) $feed->id,
+                'label'           => $feed_label,
+                'source_platform' => $source_platform,
+                'dest_platform'   => $dest_platform,
+                'apartment'       => $feed->apartment_name ?? '',
+                'pair_id'         => (int) $feed->pair_id,
+                'direction'       => $feed->direction,
             ],
             'error' => $error,
         ]);

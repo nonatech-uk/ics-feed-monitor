@@ -20,6 +20,14 @@ class ICSFM_Activator {
 
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
+        // Fresh start: drop all existing tables
+        $wpdb->query("DROP TABLE IF EXISTS {$prefix}icsfm_poll_log");
+        $wpdb->query("DROP TABLE IF EXISTS {$prefix}icsfm_log");
+        $wpdb->query("DROP TABLE IF EXISTS {$prefix}icsfm_feeds");
+        $wpdb->query("DROP TABLE IF EXISTS {$prefix}icsfm_feed_pairs");
+        $wpdb->query("DROP TABLE IF EXISTS {$prefix}icsfm_platforms");
+        $wpdb->query("DROP TABLE IF EXISTS {$prefix}icsfm_apartments");
+
         $sql_apartments = "CREATE TABLE {$prefix}icsfm_apartments (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             name varchar(255) NOT NULL,
@@ -30,15 +38,36 @@ class ICSFM_Activator {
             UNIQUE KEY slug (slug)
         ) $charset_collate;";
 
-        $sql_feeds = "CREATE TABLE {$prefix}icsfm_feeds (
+        $sql_platforms = "CREATE TABLE {$prefix}icsfm_platforms (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            name varchar(255) NOT NULL,
+            slug varchar(255) NOT NULL,
+            sort_order int(11) NOT NULL DEFAULT 0,
+            created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY  (id),
+            UNIQUE KEY slug (slug)
+        ) $charset_collate;";
+
+        $sql_feed_pairs = "CREATE TABLE {$prefix}icsfm_feed_pairs (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             apartment_id bigint(20) unsigned NOT NULL,
-            label varchar(255) NOT NULL,
-            platform varchar(50) NOT NULL DEFAULT 'other',
+            platform_a_id bigint(20) unsigned NOT NULL,
+            platform_b_id bigint(20) unsigned NOT NULL,
+            is_active tinyint(1) NOT NULL DEFAULT 1,
+            created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY  (id),
+            UNIQUE KEY apartment_platforms (apartment_id, platform_a_id, platform_b_id),
+            KEY apartment_id (apartment_id),
+            KEY is_active (is_active)
+        ) $charset_collate;";
+
+        $sql_feeds = "CREATE TABLE {$prefix}icsfm_feeds (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            pair_id bigint(20) unsigned NOT NULL,
+            direction varchar(10) NOT NULL,
             source_url text NOT NULL,
             proxy_token varchar(64) NOT NULL,
-            alert_window_hours int(11) NOT NULL DEFAULT 6,
-            is_active tinyint(1) NOT NULL DEFAULT 1,
             last_polled_at datetime DEFAULT NULL,
             last_poll_ip varchar(45) DEFAULT NULL,
             last_fetch_status varchar(20) DEFAULT 'never',
@@ -47,8 +76,7 @@ class ICSFM_Activator {
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY  (id),
             UNIQUE KEY proxy_token (proxy_token),
-            KEY apartment_id (apartment_id),
-            KEY is_active (is_active)
+            KEY pair_id (pair_id)
         ) $charset_collate;";
 
         $sql_poll_log = "CREATE TABLE {$prefix}icsfm_poll_log (
@@ -78,13 +106,17 @@ class ICSFM_Activator {
         ) $charset_collate;";
 
         dbDelta($sql_apartments);
+        dbDelta($sql_platforms);
+        dbDelta($sql_feed_pairs);
         dbDelta($sql_feeds);
         dbDelta($sql_poll_log);
         dbDelta($sql_log);
     }
 
     private static function seed_settings(): void {
-        if (get_option('icsfm_settings')) {
+        $existing = get_option('icsfm_settings');
+
+        if ($existing && ($existing['db_version'] ?? '') === '2.0') {
             return;
         }
 
@@ -92,12 +124,21 @@ class ICSFM_Activator {
             'webhook_url'          => '',
             'webhook_method'       => 'POST',
             'webhook_secret'       => bin2hex(random_bytes(16)),
-            'default_alert_window' => 6,
-            'alert_cooldown_hours' => 6,
-            'log_retention_days'   => 30,
-            'db_version'           => '1.0',
+            'alert_email'          => $existing['alert_email'] ?? '',
+            'healthcheck_url'      => $existing['healthcheck_url'] ?? '',
+            'alert_window_hours'   => (int) ($existing['default_alert_window'] ?? 6),
+            'alert_cooldown_hours' => (int) ($existing['alert_cooldown_hours'] ?? 6),
+            'log_retention_days'   => (int) ($existing['log_retention_days'] ?? 30),
+            'db_version'           => '2.0',
         ];
-        add_option('icsfm_settings', $defaults);
+
+        if ($existing && !empty($existing['webhook_url'])) {
+            $defaults['webhook_url'] = $existing['webhook_url'];
+            $defaults['webhook_method'] = $existing['webhook_method'] ?? 'POST';
+            $defaults['webhook_secret'] = $existing['webhook_secret'] ?? $defaults['webhook_secret'];
+        }
+
+        update_option('icsfm_settings', $defaults);
     }
 
     private static function schedule_cron(): void {

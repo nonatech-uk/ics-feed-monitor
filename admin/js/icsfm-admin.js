@@ -39,12 +39,29 @@
         }, 2000);
     }
 
-    // ─── Test Feed Source URL ────────────────────────────
-    $(document).on('click', '#icsfm-test-feed', function(e) {
+    // ─── Test Feed Source URL (supports multiple per page) ─
+    $(document).on('click', '.icsfm-test-feed-btn', function(e) {
         e.preventDefault();
         var btn = $(this);
-        var url = $('#source_url').val();
-        var resultEl = $('#icsfm-test-result');
+        var urlField = btn.data('url-field');
+        var url;
+        var resultEl;
+
+        if (urlField) {
+            // Pair form: data-url-field points to the input ID
+            url = $('#' + urlField).val();
+            // Result element is the sibling span
+            resultEl = btn.siblings('.icsfm-test-result');
+            if (resultEl.length === 0) {
+                // Try finding by ID convention
+                var direction = urlField.replace('source_url_', '');
+                resultEl = $('#icsfm-test-result-' + direction);
+            }
+        } else {
+            // Legacy: single test button
+            url = $('#source_url').val();
+            resultEl = $('#icsfm-test-result');
+        }
 
         if (!url) {
             resultEl.text('Please enter a URL first.').attr('class', 'icsfm-test-result error');
@@ -70,6 +87,54 @@
             btn.prop('disabled', false);
             resultEl.text('Request failed.').attr('class', 'icsfm-test-result error');
         });
+    });
+
+    // ─── Platform B dropdown filtering ───────────────────
+    // When Platform A is selected, hide that option from Platform B
+    $(document).on('change', '#platform_a_id', function() {
+        var selectedA = $(this).val();
+        var platformB = $('#platform_b_id');
+
+        if (!platformB.length) return;
+
+        // Show all options first
+        platformB.find('option').show();
+
+        // Hide the selected Platform A option from Platform B
+        if (selectedA) {
+            platformB.find('option[value="' + selectedA + '"]').hide();
+            // If Platform B currently has the same value, reset it
+            if (platformB.val() === selectedA) {
+                platformB.val('');
+            }
+        }
+    });
+
+    // Also update direction labels dynamically in create mode
+    function updateDirectionLabels() {
+        var platA = $('#platform_a_id');
+        var platB = $('#platform_b_id');
+
+        if (!platA.length || !platB.length) return;
+
+        var nameA = platA.find('option:selected').text().trim();
+        var nameB = platB.find('option:selected').text().trim();
+
+        if (nameA && nameA !== '— Select Platform A —' && nameB && nameB !== '— Select Platform B —') {
+            $('#icsfm-label-a-to-b').text(nameA + ' → ' + nameB);
+            $('#icsfm-label-b-to-a').text(nameB + ' → ' + nameA);
+            $('.icsfm-platform-a-name').text(nameA);
+            $('.icsfm-platform-b-name').text(nameB);
+        }
+    }
+
+    $(document).on('change', '#platform_a_id, #platform_b_id', updateDirectionLabels);
+
+    // Trigger on page load to set initial state
+    $(function() {
+        if ($('#platform_a_id').length) {
+            $('#platform_a_id').trigger('change');
+        }
     });
 
     // ─── Test Webhook ───────────────────────────────────

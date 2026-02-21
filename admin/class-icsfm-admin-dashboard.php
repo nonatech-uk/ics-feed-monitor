@@ -20,15 +20,23 @@ class ICSFM_Admin_Dashboard {
             return;
         }
 
-        $grouped = self::$repo->get_feeds_grouped_by_apartment();
+        $grouped = self::$repo->get_pairs_grouped_by_apartment();
+        $settings = get_option('icsfm_settings', []);
+        $alert_window_hours = (int) ($settings['alert_window_hours'] ?? 6);
         $recent_logs = ICSFM_Logger::get_recent(10);
         $next_cron = wp_next_scheduled('icsfm_check_stale_feeds');
 
         include ICSFM_PLUGIN_DIR . 'admin/views/dashboard.php';
     }
 
-    public static function get_feed_status(object $feed): array {
-        if (!$feed->is_active) {
+    /**
+     * Get feed status. Accepts optional pair_is_active and alert_window_hours
+     * to support the new pair-based model.
+     */
+    public static function get_feed_status(object $feed, ?bool $pair_is_active = null, ?int $alert_window_hours = null): array {
+        // Determine active state
+        $is_active = $pair_is_active ?? ($feed->pair_is_active ?? true);
+        if (!$is_active) {
             return ['class' => 'inactive', 'label' => 'Inactive', 'color' => '#999'];
         }
 
@@ -39,7 +47,13 @@ class ICSFM_Admin_Dashboard {
         $now = time();
         $last_polled = strtotime($feed->last_polled_at);
         $elapsed_hours = ($now - $last_polled) / 3600;
-        $threshold = (int) $feed->alert_window_hours;
+
+        // Use provided threshold, fall back to global setting
+        if ($alert_window_hours === null) {
+            $settings = get_option('icsfm_settings', []);
+            $alert_window_hours = (int) ($settings['alert_window_hours'] ?? 6);
+        }
+        $threshold = $alert_window_hours;
 
         if ($elapsed_hours <= $threshold * 0.5) {
             return ['class' => 'healthy', 'label' => 'Healthy', 'color' => '#46b450'];

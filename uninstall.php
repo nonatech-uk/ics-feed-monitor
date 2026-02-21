@@ -12,6 +12,8 @@ $prefix = $wpdb->prefix;
 $wpdb->query("DROP TABLE IF EXISTS {$prefix}icsfm_poll_log");
 $wpdb->query("DROP TABLE IF EXISTS {$prefix}icsfm_log");
 $wpdb->query("DROP TABLE IF EXISTS {$prefix}icsfm_feeds");
+$wpdb->query("DROP TABLE IF EXISTS {$prefix}icsfm_feed_pairs");
+$wpdb->query("DROP TABLE IF EXISTS {$prefix}icsfm_platforms");
 $wpdb->query("DROP TABLE IF EXISTS {$prefix}icsfm_apartments");
 
 // Remove options

@@ -3,17 +3,17 @@ defined('ABSPATH') || exit;
 
 class ICSFM_Email {
 
-    public function send_stale_alert(object $feed): bool {
+    public function send_stale_alert(object $feed, int $alert_window_hours): bool {
         $to = $this->get_email();
         if (!$to) {
             return false;
         }
 
-        $apartment = $feed->apartment_name ?? 'Unknown';
-        $label     = $feed->label;
-        $platform  = $this->display_platform($feed->platform);
-        $window    = (int) $feed->alert_window_hours;
-        $dashboard = admin_url('admin.php?page=icsfm-dashboard');
+        $apartment    = $feed->apartment_name ?? 'Unknown';
+        $feed_label   = ICSFM_Feed_Repository::derive_feed_label($feed);
+        $dest_platform = ICSFM_Feed_Repository::get_dest_platform($feed);
+        $window       = $alert_window_hours;
+        $dashboard    = admin_url('admin.php?page=icsfm-dashboard');
 
         $avg_hours = $this->get_average_poll_interval((int) $feed->id);
 
@@ -23,22 +23,23 @@ class ICSFM_Email {
             $normally     = $avg_hours
                 ? "It normally checks about every {$avg_hours} hours."
                 : "It normally checks at least every {$window} hours.";
-            $description  = "{$platform} hasn't checked the <strong>{$label}</strong> calendar for <strong>{$hours_since} hours</strong>. {$normally}";
+            $description  = "{$dest_platform} hasn't checked the <strong>{$feed_label}</strong> calendar for <strong>{$hours_since} hours</strong>. {$normally}";
         } else {
             $hours_since  = null;
             $last_checked = 'Never';
-            $description  = "{$platform} has never checked the <strong>{$label}</strong> calendar.";
+            $description  = "{$dest_platform} has never checked the <strong>{$feed_label}</strong> calendar.";
         }
 
-        $subject = "⚠️ {$platform} hasn't checked {$label}";
+        $subject = "⚠️ {$dest_platform} hasn't checked {$feed_label}";
 
         $usual_window = $avg_hours
             ? "About every {$avg_hours} hours"
             : "Every {$window} hours";
 
         $rows = [
-            ['Calendar',       $label],
-            ['Checked by',     $platform],
+            ['Calendar',       $feed_label],
+            ['Apartment',      $apartment],
+            ['Checked by',     $dest_platform],
             ['Last checked',   $last_checked],
             ['Usual frequency', $usual_window],
         ];
@@ -49,17 +50,17 @@ class ICSFM_Email {
         ];
 
         $html = $this->build_html(
-            "{$platform} hasn't checked {$label}",
+            "{$dest_platform} hasn't checked {$feed_label}",
             '#c0392b',
             $body_lines,
             $dashboard
         );
 
         ICSFM_Logger::info('email', "Sending stale alert for feed #{$feed->id}", [
-            'to'        => $to,
-            'apartment' => $apartment,
-            'label'     => $label,
-            'platform'  => $platform,
+            'to'            => $to,
+            'apartment'     => $apartment,
+            'feed_label'    => $feed_label,
+            'dest_platform' => $dest_platform,
         ]);
 
         return wp_mail($to, $subject, $html, ['Content-Type: text/html; charset=UTF-8']);
@@ -71,38 +72,39 @@ class ICSFM_Email {
             return false;
         }
 
-        $apartment    = $feed->apartment_name ?? 'Unknown';
-        $label        = $feed->label;
-        $platform     = $this->display_platform($feed->platform);
-        $last_checked = $this->format_time($feed->last_polled_at);
-        $dashboard    = admin_url('admin.php?page=icsfm-dashboard');
+        $apartment     = $feed->apartment_name ?? 'Unknown';
+        $feed_label    = ICSFM_Feed_Repository::derive_feed_label($feed);
+        $dest_platform = ICSFM_Feed_Repository::get_dest_platform($feed);
+        $last_checked  = $this->format_time($feed->last_polled_at);
+        $dashboard     = admin_url('admin.php?page=icsfm-dashboard');
 
-        $subject = "✅ {$platform} is checking {$label} again";
+        $subject = "✅ {$dest_platform} is checking {$feed_label} again";
 
         $rows = [
-            ['Calendar',    $label],
-            ['Checked by',  $platform],
+            ['Calendar',    $feed_label],
+            ['Apartment',   $apartment],
+            ['Checked by',  $dest_platform],
             ['Last checked', $last_checked],
         ];
 
         $body_lines = [
             '<p style="font-size:16px;color:#333;line-height:1.5;margin:0 0 16px;">'
-                . "{$platform} checked the <strong>{$label}</strong> calendar at <strong>{$last_checked}</strong>. Everything is back to normal.</p>",
+                . "{$dest_platform} checked the <strong>{$feed_label}</strong> calendar at <strong>{$last_checked}</strong>. Everything is back to normal.</p>",
             $this->build_table($rows),
         ];
 
         $html = $this->build_html(
-            "Good news — {$platform} is checking {$label} again",
+            "Good news — {$dest_platform} is checking {$feed_label} again",
             '#27ae60',
             $body_lines,
             $dashboard
         );
 
         ICSFM_Logger::info('email', "Sending clear alert for feed #{$feed->id}", [
-            'to'        => $to,
-            'apartment' => $apartment,
-            'label'     => $label,
-            'platform'  => $platform,
+            'to'            => $to,
+            'apartment'     => $apartment,
+            'feed_label'    => $feed_label,
+            'dest_platform' => $dest_platform,
         ]);
 
         return wp_mail($to, $subject, $html, ['Content-Type: text/html; charset=UTF-8']);
@@ -137,13 +139,6 @@ class ICSFM_Email {
     /* ------------------------------------------------------------------
      *  Private helpers
      * ----------------------------------------------------------------*/
-
-    private function display_platform(string $platform): string {
-        $map = [
-            'booking' => 'zermattapartments.ch',
-        ];
-        return $map[strtolower($platform)] ?? ucfirst($platform);
-    }
 
     private function get_email(): string {
         $settings = get_option('icsfm_settings', []);

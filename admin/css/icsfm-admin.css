@@ -96,6 +96,20 @@
     text-align: right;
 }
 
+/* ─── Direction Rows (Dashboard) ───────────────────── */
+
+.icsfm-direction-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 0;
+    font-size: 12px;
+}
+
+.icsfm-direction-text {
+    color: #646970;
+}
+
 /* ─── Badges ────────────────────────────────────────── */
 
 .icsfm-badge {
@@ -118,7 +132,6 @@
     color: #cc1818;
 }
 
-.icsfm-badge-warning,
 .icsfm-badge-warning {
     background: #fff8e5;
     color: #996800;
@@ -139,7 +152,7 @@
     color: #646970;
 }
 
-/* ─── Platform Badges ───────────────────────────────── */
+/* ─── Platform Badge (generic) ─────────────────────── */
 
 .icsfm-platform-badge {
     display: inline-block;
@@ -149,26 +162,8 @@
     font-weight: 600;
     margin-right: 4px;
     vertical-align: middle;
-}
-
-.icsfm-platform-airbnb {
-    background: #ff585d20;
-    color: #ff385c;
-}
-
-.icsfm-platform-vrbo {
-    background: #0e377620;
-    color: #0e3776;
-}
-
-.icsfm-platform-booking {
-    background: #00338d20;
-    color: #00338d;
-}
-
-.icsfm-platform-other {
-    background: #f0f0f1;
-    color: #646970;
+    background: #e8f0fe;
+    color: #1a56db;
 }
 
 /* ─── Proxy URL ─────────────────────────────────────── */
@@ -349,58 +344,87 @@
     color: #646970;
 }
 
-/* ─── Feed Proxy Blocks (Settings) ──────────────────── */
+/* ─── Feed Pair Form ────────────────────────────────── */
+
+.icsfm-pair-feed-block {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.icsfm-pair-feed-heading {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e2e4e7;
+}
+
+.icsfm-direction-label {
+    color: #1d2327;
+}
+
+.icsfm-pair-instruction {
+    background: #f0f6fc;
+    border: 1px solid #c5d9ed;
+    border-radius: 3px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: #1d2327;
+}
+
+.icsfm-pair-instruction p {
+    margin: 0;
+}
+
+.icsfm-pair-field {
+    margin-bottom: 12px;
+}
+
+.icsfm-pair-field label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 4px;
+    font-size: 13px;
+}
+
+.icsfm-pair-field .large-text {
+    margin-bottom: 6px;
+}
+
+.icsfm-pair-proxy {
+    background: #f6f7f7;
+    border: 1px solid #e2e4e7;
+    border-radius: 3px;
+    padding: 10px 14px;
+    margin-top: 12px;
+}
+
+.icsfm-pair-proxy p {
+    margin: 0 0 6px;
+    font-size: 13px;
+}
+
+.icsfm-pair-poll-history {
+    margin-top: 16px;
+}
+
+.icsfm-pair-poll-history h4 {
+    font-size: 13px;
+    margin: 0 0 8px;
+}
+
+/* ─── Readonly URL ──────────────────────────────────── */
 
 .icsfm-url-readonly {
     font-family: monospace;
     font-size: 12px;
     background: #f6f7f7;
     cursor: text;
-}
-
-.icsfm-feed-proxy-block {
-    padding: 10px 0;
-    border-bottom: 1px solid #e2e4e7;
-}
-
-.icsfm-feed-proxy-block:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-}
-
-.icsfm-feed-proxy-block:first-child {
-    padding-top: 0;
-}
-
-.icsfm-feed-proxy-header {
-    margin-bottom: 6px;
-}
-
-.icsfm-feed-proxy-detail {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.icsfm-feed-proxy-detail td {
-    padding: 3px 0;
-    vertical-align: middle;
-}
-
-.icsfm-proxy-label {
-    width: 200px;
-    font-size: 13px;
-    color: #646970;
-    padding-right: 10px !important;
-}
-
-.icsfm-proxy-hint {
-    font-size: 11px;
-    color: #a7aaad;
-    font-weight: normal;
-}
-
-.icsfm-feed-proxy-detail .icsfm-proxy-url-display {
-    margin: 0;
 }
 
 .icsfm-card h3.icsfm-card-title {

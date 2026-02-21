@@ -17,6 +17,7 @@ class ICSFM_Cron_Handler {
 
     public function check_stale_feeds(): void {
         $settings = get_option('icsfm_settings', []);
+        $alert_window_hours = (int) ($settings['alert_window_hours'] ?? 6);
         $cooldown_hours = (int) ($settings['alert_cooldown_hours'] ?? 6);
         $log_retention_days = (int) ($settings['log_retention_days'] ?? 30);
 
@@ -26,7 +27,7 @@ class ICSFM_Cron_Handler {
         ICSFM_Logger::info('cron', 'Staleness check started');
 
         // Find feeds that are stale and haven't been alerted recently
-        $stale_feeds = $this->repo->get_stale_feeds($cooldown_hours);
+        $stale_feeds = $this->repo->get_stale_feeds($alert_window_hours, $cooldown_hours);
 
         // Filter out newly created feeds that haven't had time to be polled yet
         $now = time();
@@ -37,7 +38,7 @@ class ICSFM_Cron_Handler {
             // that have never been polled
             if ($feed->last_polled_at === null) {
                 $created_ts = strtotime($feed->created_at);
-                if (($now - $created_ts) < ($feed->alert_window_hours * 3600)) {
+                if (($now - $created_ts) < ($alert_window_hours * 3600)) {
                     continue;
                 }
             }
@@ -48,8 +49,8 @@ class ICSFM_Cron_Handler {
         $stale_labels = [];
 
         foreach ($actionable as $feed) {
-            $webhook_ok = $this->webhook->fire_stale_alert($feed);
-            $email_ok = $this->email->send_stale_alert($feed);
+            $webhook_ok = $this->webhook->fire_stale_alert($feed, $alert_window_hours);
+            $email_ok = $this->email->send_stale_alert($feed, $alert_window_hours);
 
             if ($webhook_ok || $email_ok) {
                 $this->repo->update_feed((int) $feed->id, [
@@ -58,16 +59,16 @@ class ICSFM_Cron_Handler {
                 $alerted++;
             }
 
+            $feed_label = ICSFM_Feed_Repository::derive_feed_label($feed);
             $stale_labels[] = sprintf(
-                '%s / %s (%s)',
+                '%s / %s',
                 $feed->apartment_name ?? 'Unknown',
-                $feed->label,
-                $feed->platform
+                $feed_label
             );
         }
 
         // Check for feeds that have recovered since last alert
-        $cleared_feeds = $this->repo->get_cleared_feeds();
+        $cleared_feeds = $this->repo->get_cleared_feeds($alert_window_hours);
         $cleared_count = 0;
 
         foreach ($cleared_feeds as $feed) {
@@ -101,7 +102,7 @@ class ICSFM_Cron_Handler {
         }
 
         // Ping healthcheck: /fail if ANY feed is currently stale (regardless of alert cooldown)
-        $all_stale = $this->repo->get_all_stale_feeds();
+        $all_stale = $this->repo->get_all_stale_feeds($alert_window_hours);
         if (count($all_stale) > 0) {
             $this->webhook->ping_healthcheck('fail');
         } else {

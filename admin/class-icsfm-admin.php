@@ -19,14 +19,16 @@ class ICSFM_Admin {
         // Initialize sub-pages
         $dashboard = new ICSFM_Admin_Dashboard($this->repo, $this->poll_logger);
         $apartments = new ICSFM_Admin_Apartments($this->repo);
-        $feeds = new ICSFM_Admin_Feeds($this->repo, $this->poll_logger);
+        $platforms = new ICSFM_Admin_Platforms($this->repo);
+        $pairs = new ICSFM_Admin_Pairs($this->repo, $this->poll_logger);
         $settings = new ICSFM_Admin_Settings($this->repo);
         $logs = new ICSFM_Admin_Logs();
         $ajax = new ICSFM_Admin_Ajax($this->repo, $this->poll_logger);
 
         $dashboard->init();
         $apartments->init();
-        $feeds->init();
+        $platforms->init();
+        $pairs->init();
         $settings->init();
         $logs->init();
         $ajax->init();
@@ -63,11 +65,20 @@ class ICSFM_Admin {
 
         add_submenu_page(
             'icsfm-dashboard',
-            __('Feeds', 'ics-feed-monitor'),
-            __('Feeds', 'ics-feed-monitor'),
+            __('Platforms', 'ics-feed-monitor'),
+            __('Platforms', 'ics-feed-monitor'),
             'manage_options',
-            'icsfm-feeds',
-            [ICSFM_Admin_Feeds::class, 'render_page']
+            'icsfm-platforms',
+            [ICSFM_Admin_Platforms::class, 'render_page']
+        );
+
+        add_submenu_page(
+            'icsfm-dashboard',
+            __('Feed Pairs', 'ics-feed-monitor'),
+            __('Feed Pairs', 'ics-feed-monitor'),
+            'manage_options',
+            'icsfm-pairs',
+            [ICSFM_Admin_Pairs::class, 'render_page']
         );
 
         add_submenu_page(

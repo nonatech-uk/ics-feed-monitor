@@ -36,7 +36,7 @@
             <thead>
                 <tr>
                     <th>Name</th>
-                    <th>Feeds</th>
+                    <th>Feed Pairs</th>
                     <th>Sort Order</th>
                     <th>Created</th>
                     <th>Actions</th>
@@ -46,11 +46,11 @@
                 <?php
                 $repo = new ICSFM_Feed_Repository();
                 foreach ($apartments as $apartment):
-                    $feed_count = count($repo->get_feeds_for_apartment((int) $apartment->id));
+                    $pair_count = count($repo->get_pairs_for_apartment((int) $apartment->id));
                 ?>
                 <tr>
                     <td><strong><?php echo esc_html($apartment->name); ?></strong></td>
-                    <td><?php echo (int) $feed_count; ?></td>
+                    <td><?php echo (int) $pair_count; ?></td>
                     <td><?php echo (int) $apartment->sort_order; ?></td>
                     <td><?php echo esc_html(wp_date('M j, Y', strtotime($apartment->created_at))); ?></td>
                     <td>
@@ -59,7 +59,7 @@
                         <a href="<?php echo esc_url(wp_nonce_url(
                             admin_url('admin-post.php?action=icsfm_delete_apartment&id=' . $apartment->id),
                             'icsfm_delete_apartment_' . $apartment->id
-                        )); ?>" class="icsfm-delete-link" onclick="return confirm('Delete this apartment and all its feeds?');">Delete</a>
+                        )); ?>" class="icsfm-delete-link" onclick="return confirm('Delete this apartment and all its feed pairs?');">Delete</a>
                     </td>
                 </tr>
                 <?php endforeach; ?>

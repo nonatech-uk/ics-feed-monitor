@@ -62,10 +62,10 @@
             <tr>
                 <th scope="row"><label for="alert_email">Alert Email Address</label></th>
                 <td>
-                    <input type="email" name="alert_email" id="alert_email" class="regular-text"
+                    <input type="text" name="alert_email" id="alert_email" class="regular-text"
                            value="<?php echo esc_attr($settings['alert_email'] ?? ''); ?>"
                            placeholder="you@example.com">
-                    <p class="description">Email address to receive stale-feed and recovery alerts. Leave empty to disable email alerts.</p>
+                    <p class="description">Email address(es) to receive stale-feed and recovery alerts. Comma-separated for multiple recipients. Leave empty to disable.</p>
                 </td>
             </tr>
             <tr>
@@ -111,14 +111,14 @@
             </tr>
         </table>
 
-        <h2>Default Feed Settings</h2>
+        <h2>Alert Settings</h2>
         <table class="form-table">
             <tr>
-                <th scope="row"><label for="default_alert_window">Default Alert Window</label></th>
+                <th scope="row"><label for="alert_window_hours">Alert Window</label></th>
                 <td>
-                    <input type="number" name="default_alert_window" id="default_alert_window" class="small-text" min="1" max="168"
-                           value="<?php echo (int) ($settings['default_alert_window'] ?? 6); ?>"> hours
-                    <p class="description">Default hours before alerting on un-polled feeds. Can be overridden per feed.</p>
+                    <input type="number" name="alert_window_hours" id="alert_window_hours" class="small-text" min="1" max="168"
+                           value="<?php echo (int) ($settings['alert_window_hours'] ?? 6); ?>"> hours
+                    <p class="description">Alert if a feed has not been polled within this many hours.</p>
                 </td>
             </tr>
             <tr>
@@ -142,79 +142,6 @@
                 </td>
             </tr>
         </table>
-
-        <h2>Feed Proxy URLs</h2>
-        <p class="description" style="margin-bottom: 12px;">
-            Enter the real ICS feed URL for each platform. The proxy URL is what you give to the <strong>other</strong> platforms
-            to import — it fetches the real data and passes it through, while logging every request so we can detect when polling stops.
-        </p>
-
-        <?php if (empty($grouped)): ?>
-            <p>No apartments configured yet. <a href="<?php echo esc_url(admin_url('admin.php?page=icsfm-apartments&action=add')); ?>">Add an apartment</a> first, then <a href="<?php echo esc_url(admin_url('admin.php?page=icsfm-feeds&action=add')); ?>">add feeds</a>.</p>
-        <?php else: ?>
-            <?php
-            $all_platform_labels = [
-                'booking' => 'Booking Platform',
-                'airbnb'  => 'Airbnb',
-                'vrbo'    => 'VRBO',
-                'other'   => 'Other',
-            ];
-            ?>
-            <?php foreach ($grouped as $apartment):
-                $apt_platforms = [];
-                foreach ($apartment->feeds as $f) {
-                    $apt_platforms[$f->platform] = $all_platform_labels[$f->platform] ?? ucfirst($f->platform);
-                }
-            ?>
-                <div class="icsfm-card icsfm-card-wide">
-                    <h3 class="icsfm-card-title"><?php echo esc_html($apartment->name); ?></h3>
-
-                    <?php if (empty($apartment->feeds)): ?>
-                        <p class="icsfm-muted">No feeds configured. <a href="<?php echo esc_url(admin_url('admin.php?page=icsfm-feeds&action=add')); ?>">Add a feed</a>.</p>
-                    <?php else: ?>
-                        <?php foreach ($apartment->feeds as $feed):
-                            $proxy_url = rest_url("icsfm/v1/feed/{$feed->proxy_token}");
-                            $platform_label = $all_platform_labels[$feed->platform] ?? ucfirst($feed->platform);
-                            $consumers = [];
-                            foreach ($apt_platforms as $plat_key => $plat_label) {
-                                if ($plat_key !== $feed->platform) {
-                                    $consumers[] = $plat_label;
-                                }
-                            }
-                            $consumers_str = !empty($consumers) ? implode(', ', $consumers) : 'other platforms';
-                        ?>
-                            <div class="icsfm-feed-proxy-block">
-                                <div class="icsfm-feed-proxy-header">
-                                    <span class="icsfm-platform-badge icsfm-platform-<?php echo esc_attr($feed->platform); ?>">
-                                        <?php echo esc_html($platform_label); ?>
-                                    </span>
-                                </div>
-
-                                <table class="icsfm-feed-proxy-detail">
-                                    <tr>
-                                        <td class="icsfm-proxy-label">Real <?php echo esc_html($platform_label); ?> feed URL:</td>
-                                        <td>
-                                            <input type="url" name="feed_source_url[<?php echo (int) $feed->id; ?>]" class="large-text"
-                                                   value="<?php echo esc_attr($feed->source_url); ?>"
-                                                   placeholder="https://...">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="icsfm-proxy-label">Proxy URL<br><span class="icsfm-proxy-hint">paste into <?php echo esc_html($consumers_str); ?></span></td>
-                                        <td>
-                                            <div class="icsfm-proxy-url-display">
-                                                <input type="text" readonly class="large-text icsfm-url-readonly" value="<?php echo esc_attr($proxy_url); ?>">
-                                                <button type="button" class="button button-small icsfm-copy-btn" data-url="<?php echo esc_attr($proxy_url); ?>">Copy</button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </table>
-                            </div>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
 
         <?php submit_button('Save Settings'); ?>
     </form>

@@ -44,9 +44,11 @@ class ICSFM_Proxy_Handler {
 
         // Look up feed
         $feed = $this->repo->find_by_token($token);
-        if (!$feed || !$feed->is_active) {
+        if (!$feed || !$feed->pair_is_active) {
             return new \WP_Error('not_found', 'Feed not found', ['status' => 404]);
         }
+
+        $feed_label = ICSFM_Feed_Repository::derive_feed_label($feed);
 
         // Fetch upstream ICS
         $start = microtime(true);
@@ -77,7 +79,7 @@ class ICSFM_Proxy_Handler {
 
             ICSFM_Logger::error('proxy', 'Upstream fetch failed', [
                 'feed_id'       => $feed->id,
-                'feed_label'    => $feed->label,
+                'feed_label'    => $feed_label,
                 'apartment'     => $feed->apartment_name,
                 'source_url'    => $feed->source_url,
                 'error'         => $error_msg,
@@ -97,8 +99,8 @@ class ICSFM_Proxy_Handler {
         // Validate it looks like ICS
         if (strpos($ics_body, 'BEGIN:VCALENDAR') === false) {
             ICSFM_Logger::warning('proxy', 'Upstream returned non-ICS content', [
-                'feed_id'    => $feed->id,
-                'feed_label' => $feed->label,
+                'feed_id'      => $feed->id,
+                'feed_label'   => $feed_label,
                 'content_type' => wp_remote_retrieve_header($response, 'content-type'),
                 'body_preview' => substr($ics_body, 0, 200),
             ]);
@@ -123,7 +125,7 @@ class ICSFM_Proxy_Handler {
 
         ICSFM_Logger::debug('proxy', 'Feed polled successfully', [
             'feed_id'      => $feed->id,
-            'feed_label'   => $feed->label,
+            'feed_label'   => $feed_label,
             'apartment'    => $feed->apartment_name,
             'response_ms'  => $elapsed_ms,
             'ics_bytes'    => strlen($ics_body),

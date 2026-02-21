@@ -195,30 +195,43 @@ class ICSFM_Admin_Ajax {
             wp_send_json_error('Unauthorized');
         }
 
-        $grouped = $this->repo->get_feeds_grouped_by_apartment();
+        $settings = get_option('icsfm_settings', []);
+        $alert_window_hours = (int) ($settings['alert_window_hours'] ?? 6);
+
+        $grouped = $this->repo->get_pairs_grouped_by_apartment();
         $data = [];
 
         foreach ($grouped as $apartment) {
             $apt_data = [
                 'id'    => $apartment->id,
                 'name'  => $apartment->name,
-                'feeds' => [],
+                'pairs' => [],
             ];
 
-            foreach ($apartment->feeds as $feed) {
-                $status = ICSFM_Admin_Dashboard::get_feed_status($feed);
-                $apt_data['feeds'][] = [
-                    'id'               => $feed->id,
-                    'label'            => $feed->label,
-                    'platform'         => $feed->platform,
-                    'status'           => $status,
-                    'last_polled_at'   => $feed->last_polled_at,
-                    'last_polled_ago'  => $feed->last_polled_at
-                        ? ICSFM_Admin_Dashboard::time_ago($feed->last_polled_at)
-                        : 'Never',
-                    'last_fetch_status' => $feed->last_fetch_status,
-                    'alert_window'     => $feed->alert_window_hours,
+            foreach ($apartment->pairs as $pair) {
+                $pair_data = [
+                    'id'              => $pair->id,
+                    'platform_a_name' => $pair->platform_a_name,
+                    'platform_b_name' => $pair->platform_b_name,
+                    'is_active'       => (bool) $pair->is_active,
+                    'feeds'           => [],
                 ];
+
+                foreach ($pair->feeds as $feed) {
+                    $status = ICSFM_Admin_Dashboard::get_feed_status($feed, $pair->is_active, $alert_window_hours);
+                    $pair_data['feeds'][] = [
+                        'id'               => $feed->id,
+                        'direction'        => $feed->direction,
+                        'status'           => $status,
+                        'last_polled_at'   => $feed->last_polled_at,
+                        'last_polled_ago'  => $feed->last_polled_at
+                            ? ICSFM_Admin_Dashboard::time_ago($feed->last_polled_at)
+                            : 'Never',
+                        'last_fetch_status' => $feed->last_fetch_status,
+                    ];
+                }
+
+                $apt_data['pairs'][] = $pair_data;
             }
 
             $data[] = $apt_data;

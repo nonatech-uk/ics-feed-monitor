@@ -12,38 +12,55 @@
                 <div class="icsfm-card">
                     <h2 class="icsfm-card-title"><?php echo esc_html($apartment->name); ?></h2>
 
-                    <?php if (empty($apartment->feeds)): ?>
-                        <p class="icsfm-muted">No feeds configured. <a href="<?php echo esc_url(admin_url('admin.php?page=icsfm-feeds&action=add')); ?>">Add a feed</a>.</p>
+                    <?php if (empty($apartment->pairs)): ?>
+                        <p class="icsfm-muted">No feed pairs configured. <a href="<?php echo esc_url(admin_url('admin.php?page=icsfm-pairs&action=add')); ?>">Add a feed pair</a>.</p>
                     <?php else: ?>
                         <table class="icsfm-status-table">
                             <tbody>
-                                <?php foreach ($apartment->feeds as $feed):
-                                    $status = ICSFM_Admin_Dashboard::get_feed_status($feed);
+                                <?php foreach ($apartment->pairs as $pair):
+                                    $feed_a = null;
+                                    $feed_b = null;
+                                    foreach ($pair->feeds as $f) {
+                                        if ($f->direction === 'a_to_b') $feed_a = $f;
+                                        if ($f->direction === 'b_to_a') $feed_b = $f;
+                                    }
+                                    $status_a = $feed_a ? ICSFM_Admin_Dashboard::get_feed_status($feed_a, $pair->is_active, $alert_window_hours) : null;
+                                    $status_b = $feed_b ? ICSFM_Admin_Dashboard::get_feed_status($feed_b, $pair->is_active, $alert_window_hours) : null;
                                 ?>
-                                <tr data-feed-id="<?php echo esc_attr($feed->id); ?>">
-                                    <td class="icsfm-status-dot">
-                                        <span class="icsfm-dot" style="background-color: <?php echo esc_attr($status['color']); ?>" title="<?php echo esc_attr($status['label']); ?>"></span>
-                                    </td>
-                                    <td class="icsfm-feed-label">
-                                        <span class="icsfm-platform-badge icsfm-platform-<?php echo esc_attr($feed->platform); ?>"><?php echo esc_html(ucfirst($feed->platform)); ?></span>
-                                        <a href="<?php echo esc_url(admin_url('admin.php?page=icsfm-feeds&action=edit&id=' . $feed->id)); ?>">
-                                            <?php echo esc_html($feed->label); ?>
+                                <tr data-pair-id="<?php echo esc_attr($pair->id); ?>">
+                                    <td class="icsfm-feed-label" style="padding: 8px 4px;">
+                                        <a href="<?php echo esc_url(admin_url('admin.php?page=icsfm-pairs&action=edit&id=' . $pair->id)); ?>" style="text-decoration:none; color:#1d2327;">
+                                            <strong><?php echo esc_html($pair->platform_a_name); ?> &#8596; <?php echo esc_html($pair->platform_b_name); ?></strong>
                                         </a>
-                                    </td>
-                                    <td class="icsfm-feed-poll-time">
-                                        <?php if ($feed->last_polled_at): ?>
-                                            Last poll: <?php echo esc_html(ICSFM_Admin_Dashboard::time_ago($feed->last_polled_at)); ?>
-                                            <br><span class="icsfm-muted"><?php echo esc_html(gmdate('j M Y, g:ia', strtotime($feed->last_polled_at))); ?> UTC</span>
-                                        <?php else: ?>
-                                            <span class="icsfm-muted">Never polled</span>
+                                        <?php if (!$pair->is_active): ?>
+                                            <span class="icsfm-badge icsfm-badge-inactive">Inactive</span>
                                         <?php endif; ?>
                                     </td>
-                                    <td class="icsfm-feed-fetch-status">
-                                        <?php if ($feed->last_fetch_status === 'error'): ?>
-                                            <span class="icsfm-badge icsfm-badge-error">Upstream Error</span>
-                                        <?php elseif ($feed->last_fetch_status === 'ok'): ?>
-                                            <span class="icsfm-badge icsfm-badge-ok">OK</span>
-                                        <?php endif; ?>
+                                    <td class="icsfm-pair-directions" style="padding: 8px 4px;">
+                                        <div class="icsfm-direction-row">
+                                            <?php if ($status_a): ?>
+                                                <span class="icsfm-dot" style="background-color: <?php echo esc_attr($status_a['color']); ?>" title="<?php echo esc_attr($status_a['label']); ?>"></span>
+                                                <span class="icsfm-direction-text"><?php echo esc_html($pair->platform_a_name); ?> → <?php echo esc_html($pair->platform_b_name); ?></span>
+                                                <?php if ($feed_a && $feed_a->last_polled_at): ?>
+                                                    <span class="icsfm-muted" style="font-size:11px; margin-left:4px;"><?php echo esc_html(ICSFM_Admin_Dashboard::time_ago($feed_a->last_polled_at)); ?></span>
+                                                <?php endif; ?>
+                                                <?php if ($feed_a && $feed_a->last_fetch_status === 'error'): ?>
+                                                    <span class="icsfm-badge icsfm-badge-error" style="font-size:10px;">Err</span>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="icsfm-direction-row">
+                                            <?php if ($status_b): ?>
+                                                <span class="icsfm-dot" style="background-color: <?php echo esc_attr($status_b['color']); ?>" title="<?php echo esc_attr($status_b['label']); ?>"></span>
+                                                <span class="icsfm-direction-text"><?php echo esc_html($pair->platform_b_name); ?> → <?php echo esc_html($pair->platform_a_name); ?></span>
+                                                <?php if ($feed_b && $feed_b->last_polled_at): ?>
+                                                    <span class="icsfm-muted" style="font-size:11px; margin-left:4px;"><?php echo esc_html(ICSFM_Admin_Dashboard::time_ago($feed_b->last_polled_at)); ?></span>
+                                                <?php endif; ?>
+                                                <?php if ($feed_b && $feed_b->last_fetch_status === 'error'): ?>
+                                                    <span class="icsfm-badge icsfm-badge-error" style="font-size:10px;">Err</span>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+                                        </div>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
@@ -101,7 +118,6 @@
                 nonce: icsfm.nonce
             }, function(response) {
                 if (response.success) {
-                    // Reload the page for simplicity; could do DOM updates for smoother UX
                     location.reload();
                 }
             });

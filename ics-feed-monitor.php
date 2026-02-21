@@ -3,7 +3,7 @@
  * Plugin Name: ICS Feed Monitor
  * Plugin URI:  https://github.com/nonatech-uk/ICS-Sync-Checker
  * Description: Proxies ICS calendar feeds and monitors polling activity. Alerts via webhook when platforms stop syncing.
- * Version:     1.2.0
+ * Version:     2.0.0
  * Author:      Nonatech UK
  * Author URI:  https://nonatech.co.uk
  * Text Domain: ics-feed-monitor
@@ -13,7 +13,7 @@
 
 defined('ABSPATH') || exit;
 
-define('ICSFM_VERSION', '1.2.0');
+define('ICSFM_VERSION', '2.0.0');
 define('ICSFM_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('ICSFM_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('ICSFM_PLUGIN_FILE', __FILE__);
@@ -69,7 +69,8 @@ add_action('plugins_loaded', function () {
         require_once ICSFM_PLUGIN_DIR . 'admin/class-icsfm-admin.php';
         require_once ICSFM_PLUGIN_DIR . 'admin/class-icsfm-admin-dashboard.php';
         require_once ICSFM_PLUGIN_DIR . 'admin/class-icsfm-admin-apartments.php';
-        require_once ICSFM_PLUGIN_DIR . 'admin/class-icsfm-admin-feeds.php';
+        require_once ICSFM_PLUGIN_DIR . 'admin/class-icsfm-admin-platforms.php';
+        require_once ICSFM_PLUGIN_DIR . 'admin/class-icsfm-admin-pairs.php';
         require_once ICSFM_PLUGIN_DIR . 'admin/class-icsfm-admin-settings.php';
         require_once ICSFM_PLUGIN_DIR . 'admin/class-icsfm-admin-logs.php';
         require_once ICSFM_PLUGIN_DIR . 'admin/class-icsfm-admin-ajax.php';
